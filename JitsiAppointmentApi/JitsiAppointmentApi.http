@@ -1,0 +1,6 @@
+@JitsiAppointmentApi_HostAddress = http://localhost:5000
+
+GET {{JitsiAppointmentApi_HostAddress}}/api/meetings
+Accept: application/json
+
+###

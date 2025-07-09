@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: meet-example-com-tls
+  namespace: default
+spec:
+  secretName: meet-example-com-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: meet.example.com  # <-- Replace with your domain
+  dnsNames:
+    - meet.example.com         # <-- Replace with your domain

@@ -1,0 +1,207 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\ai-medical\\backend\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|d:\\ai-medical\\backend\\jitsiappointmentapi\\controllers\\meetingscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|solutionrelative:jitsiappointmentapi\\controllers\\meetingscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|d:\\ai-medical\\backend\\jitsiappointmentapi\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|solutionrelative:jitsiappointmentapi\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|d:\\ai-medical\\backend\\jitsiappointmentapi\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|solutionrelative:jitsiappointmentapi\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|d:\\ai-medical\\backend\\jitsiappointmentapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|solutionrelative:jitsiappointmentapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|d:\\ai-medical\\backend\\jitsiappointmentapi\\models\\meeting.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|solutionrelative:jitsiappointmentapi\\models\\meeting.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|d:\\ai-medical\\backend\\jitsiappointmentapi\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|solutionrelative:jitsiappointmentapi\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|d:\\ai-medical\\backend\\jitsiappointmentapi\\config\\jitsioptions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|solutionrelative:jitsiappointmentapi\\config\\jitsioptions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|d:\\ai-medical\\backend\\jitsiappointmentapi\\services\\jitsijwtservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|solutionrelative:jitsiappointmentapi\\services\\jitsijwtservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|d:\\ai-medical\\backend\\jitsiappointmentapi\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|solutionrelative:jitsiappointmentapi\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|d:\\ai-medical\\backend\\jitsiappointmentapi\\wwwroot\\meeting.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|solutionrelative:jitsiappointmentapi\\wwwroot\\meeting.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|d:\\ai-medical\\backend\\jitsiappointmentapi\\jitsiappointmentapi.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{3AC19E23-3B67-40BD-932F-E8CB05A4086A}|JitsiAppointmentApi\\JitsiAppointmentApi.csproj|solutionrelative:jitsiappointmentapi\\jitsiappointmentapi.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 7,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "JitsiAppointmentApi\\Properties\\launchSettings.json",
+              "ToolTip": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\Properties\\launchSettings.json",
+              "RelativeToolTip": "JitsiAppointmentApi\\Properties\\launchSettings.json",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABoAAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-07-07T07:59:33.65Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "JitsiJwtService.cs",
+              "DocumentMoniker": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\Services\\JitsiJwtService.cs",
+              "RelativeDocumentMoniker": "JitsiAppointmentApi\\Services\\JitsiJwtService.cs",
+              "ToolTip": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\Services\\JitsiJwtService.cs",
+              "RelativeToolTip": "JitsiAppointmentApi\\Services\\JitsiJwtService.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAAowCMAAAA+AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-03T13:08:47.2Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "JitsiOptions.cs",
+              "DocumentMoniker": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\Config\\JitsiOptions.cs",
+              "RelativeDocumentMoniker": "JitsiAppointmentApi\\Config\\JitsiOptions.cs",
+              "ToolTip": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\Config\\JitsiOptions.cs",
+              "RelativeToolTip": "JitsiAppointmentApi\\Config\\JitsiOptions.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAA+AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-03T13:03:53.898Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\Data\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "JitsiAppointmentApi\\Data\\AppDbContext.cs",
+              "ToolTip": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\Data\\AppDbContext.cs",
+              "RelativeToolTip": "JitsiAppointmentApi\\Data\\AppDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-03T10:08:30.32Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Meeting.cs",
+              "DocumentMoniker": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\Models\\Meeting.cs",
+              "RelativeDocumentMoniker": "JitsiAppointmentApi\\Models\\Meeting.cs",
+              "ToolTip": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\Models\\Meeting.cs",
+              "RelativeToolTip": "JitsiAppointmentApi\\Models\\Meeting.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-03T10:08:09.098Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\Program.cs",
+              "RelativeDocumentMoniker": "JitsiAppointmentApi\\Program.cs",
+              "ToolTip": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\Program.cs",
+              "RelativeToolTip": "JitsiAppointmentApi\\Program.cs",
+              "ViewState": "AgIAACEAAAAAAAAAAAAAAEYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-02T09:33:33.727Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\appsettings.json",
+              "RelativeDocumentMoniker": "JitsiAppointmentApi\\appsettings.json",
+              "ToolTip": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\appsettings.json",
+              "RelativeToolTip": "JitsiAppointmentApi\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-07-02T09:29:04.482Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MeetingsController.cs",
+              "DocumentMoniker": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\Controllers\\MeetingsController.cs",
+              "RelativeDocumentMoniker": "JitsiAppointmentApi\\Controllers\\MeetingsController.cs",
+              "ToolTip": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\Controllers\\MeetingsController.cs",
+              "RelativeToolTip": "JitsiAppointmentApi\\Controllers\\MeetingsController.cs",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAAA4AAAA0AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-02T09:18:33.16Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "JitsiAppointmentApi\\Controllers\\AuthController.cs",
+              "ToolTip": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "JitsiAppointmentApi\\Controllers\\AuthController.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAAwCoAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-04T06:29:51.472Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "JitsiAppointmentApi.csproj",
+              "DocumentMoniker": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\JitsiAppointmentApi.csproj",
+              "RelativeDocumentMoniker": "JitsiAppointmentApi\\JitsiAppointmentApi.csproj",
+              "ToolTip": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\JitsiAppointmentApi.csproj",
+              "RelativeToolTip": "JitsiAppointmentApi\\JitsiAppointmentApi.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-07-04T11:04:54.017Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "meeting.html",
+              "DocumentMoniker": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\wwwroot\\meeting.html",
+              "RelativeDocumentMoniker": "JitsiAppointmentApi\\wwwroot\\meeting.html",
+              "ToolTip": "D:\\ai-medical\\backend\\JitsiAppointmentApi\\wwwroot\\meeting.html",
+              "RelativeToolTip": "JitsiAppointmentApi\\wwwroot\\meeting.html",
+              "ViewState": "AgIAADkAAAAAAAAAAAAAAFEAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2025-07-04T11:07:20.813Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

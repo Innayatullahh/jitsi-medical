@@ -1,0 +1,107 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>TeleHealth Meeting</title>
+    <link rel="icon" href="favicon.ico">
+    <style>
+        body {
+            background: #f5f5f5;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        #header {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+            #header img {
+                height: 60px;
+            }
+
+            #header h2 {
+                color: #1976d2;
+            }
+
+        #meeting-details {
+            text-align: center;
+            margin: 20px 0;
+            color: #444;
+        }
+
+        #jitsi-meet {
+            width: 80vw;
+            height: 80vh;
+            margin: 0 auto;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px #0002;
+        }
+
+        #footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #888;
+        }
+
+        #help-btn {
+            color: #1976d2;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <img src="/telehealth-logo.png" alt="TeleHealth">
+        <h2>Welcome to TeleHealth Meetings</h2>
+    </div>
+    <!--<div id="meeting-details">
+        <span id="meeting-subject">Team Sync</span> | <span id="meeting-time">10:00 AM</span>
+    </div>-->
+    <div id="jitsi-meet"></div>
+    <div id="footer">
+        Need help? <a id="help-btn" href="/support">Contact Support</a>
+    </div>
+    <script src="https://meet.invomail.io/MinimalSoftwaresStuffProperly/external_api.js"></script>
+    <script>
+        // Get params
+        function getQueryParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
+        const roomName = getQueryParam('room');
+        const jwtToken = getQueryParam('jwt');
+        const userName = getQueryParam('userName');
+        const userEmail = getQueryParam('userEmail');
+        const subject = getQueryParam('subject') || "Meeting";
+
+        //document.getElementById('meeting-subject').textContent = subject;
+
+        if (!roomName || !jwtToken) {
+            document.body.innerHTML = '<h2>Missing room or token!</h2>';
+        } else {
+            const domain = "meet.invomail.io";
+            const options = {
+                roomName: roomName,
+                parentNode: document.querySelector('#jitsi-meet'),
+                jwt: jwtToken,
+                userInfo: {
+                    displayName: userName || "",
+                    email: userEmail || ""
+                },
+                configOverwrite: {
+                    startWithAudioMuted: true,
+                    startWithVideoMuted: true,
+                    defaultLanguage: "en",
+                    subject: subject
+                },
+                interfaceConfigOverwrite: {
+                    TOOLBAR_BUTTONS: [
+                        'microphone', 'camera', 'select-background', 'desktop', 'chat', 'raisehand', 'tileview', 'hangup', 'security'
+                    ]
+                }
+            };
+            const api = new JitsiMeetExternalAPI(domain, options);
+        }
+    </script>
+</body>
+</html>

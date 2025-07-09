@@ -1,0 +1,86 @@
+services:
+  jitsiappointmentapi:
+    image: jitsiappointmentapi:latest
+    ports:
+      - "5000:80"
+    networks:
+      - meetnet
+    depends_on:
+      - db
+      - prosody
+      - web
+      - jicofo
+      - jvb
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/swagger/index.html"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  # Jitsi Meet stack (imported from existing compose file)
+  # You can copy the services from docker-jitsi-meet/docker-compose.yml here, or use 'extends' if supported by your Docker Compose version.
+  # For simplicity, here is a minimal example:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: jitsi_appointments
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5432:5432"
+    networks:
+      - meetnet
+  prosody:
+    image: jitsi/prosody:stable-8922
+    networks:
+      - meetnet
+    env_file:
+      - ./docker-jitsi-meet/.env
+  web:
+    image: jitsi/web:stable-8922
+    networks:
+      - meetnet
+    ports:
+      - "8000:80"
+      - "8443:443"
+    volumes:
+      - C:/Users/Innayat/.jitsi-meet-cfg/web:/config:Z
+      - C:/Users/Innayat/.jitsi-meet-certs:/config/certs:ro
+    env_file:
+      - ./docker-jitsi-meet/.env
+  jicofo:
+    image: jitsi/jicofo:stable-8922
+    networks:
+      - meetnet
+    env_file:
+      - ./docker-jitsi-meet/.env
+  jvb:
+    image: jitsi/jvb:stable-8922
+    networks:
+      - meetnet
+    env_file:
+      - ./docker-jitsi-meet/.env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - C:/Users/Innayat/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - meetnet
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    networks:
+      - meetnet
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
+networks:
+  meetnet:
+    driver: overlay 
