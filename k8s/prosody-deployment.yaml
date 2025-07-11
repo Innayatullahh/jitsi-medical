@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prosody
+  namespace: jitsi-meet
+  labels:
+    app: prosody
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prosody
+  template:
+    metadata:
+      labels:
+        app: prosody
+    spec:
+      containers:
+      - name: prosody
+        image: jitsi/prosody:stable-8922
+        ports:
+        - containerPort: 5222
+        - containerPort: 5347
+        - containerPort: 5280
+        env:
+        - name: JICOFO_AUTH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: jitsi-secrets
+              key: JICOFO_AUTH_PASSWORD
+        - name: JICOFO_COMPONENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: jitsi-secrets
+              key: JICOFO_COMPONENT_SECRET
+        - name: JVB_AUTH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: jitsi-secrets
+              key: JVB_AUTH_PASSWORD
+        - name: PROSODY_AUTH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: jitsi-secrets
+              key: PROSODY_AUTH_PASSWORD
+        - name: PROSODY_COMPONENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: jitsi-secrets
+              key: PROSODY_COMPONENT_SECRET
+        - name: WEB_DOMAIN
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: WEB_DOMAIN
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /http-bind
+            port: 5280
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /http-bind
+            port: 5280
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prosody-service
+  namespace: jitsi-meet
+  labels:
+    app: prosody
+spec:
+  selector:
+    app: prosody
+  ports:
+  - name: xmpp-client
+    port: 5222
+    targetPort: 5222
+  - name: xmpp-server
+    port: 5347
+    targetPort: 5347
+  - name: http-bind
+    port: 5280
+    targetPort: 5280
+  type: ClusterIP 

@@ -1,0 +1,176 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jvb
+  namespace: jitsi-meet
+  labels:
+    app: jvb
+    component: videobridge
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: jvb
+  template:
+    metadata:
+      labels:
+        app: jvb
+        component: videobridge
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: jvb
+        image: jitsi/jvb:stable-8922
+        ports:
+        - containerPort: 8080
+          name: metrics
+        - containerPort: 4096
+          name: rtp-4096
+        - containerPort: 4097
+          name: rtp-4097
+        - containerPort: 4098
+          name: rtp-4098
+        - containerPort: 4099
+          name: rtp-4099
+        env:
+        - name: JVB_AUTH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: jitsi-secrets
+              key: JVB_AUTH_PASSWORD
+        - name: JVB_BREWERY_MUC
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: JVB_BREWERY_MUC
+        - name: JVB_ENABLE_STATISTICS
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: JVB_ENABLE_STATISTICS
+        - name: JVB_STATISTICS_TRANSPORT
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: JVB_STATISTICS_TRANSPORT
+        - name: JVB_STATISTICS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: JVB_STATISTICS_PORT
+        - name: PROSODY_SERVER
+          value: "prosody-service"
+        - name: JVB_OPENTELEMETRY_ENABLED
+          value: "true"
+        - name: JVB_OPENTELEMETRY_ENDPOINT
+          value: "http://otel-collector:4317"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: config-data
+          mountPath: /config
+        - name: jvb-config
+          mountPath: /config/jvb-config
+          readOnly: true
+      volumes:
+      - name: config-data
+        emptyDir: {}
+      - name: jvb-config
+        configMap:
+          name: jvb-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jvb-service
+  namespace: jitsi-meet
+  labels:
+    app: jvb
+    component: videobridge
+spec:
+  selector:
+    app: jvb
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+  - name: udp-4096
+    port: 4096
+    targetPort: 4096
+    protocol: UDP
+  - name: udp-4097
+    port: 4097
+    targetPort: 4097
+    protocol: UDP
+  - name: udp-4098
+    port: 4098
+    targetPort: 4098
+    protocol: UDP
+  - name: udp-4099
+    port: 4099
+    targetPort: 4099
+    protocol: UDP
+  type: LoadBalancer
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: jvb-hpa
+  namespace: jitsi-meet
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: jvb
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60

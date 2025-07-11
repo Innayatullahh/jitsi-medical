@@ -1,0 +1,310 @@
+# Jitsi Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jitsi-config
+  namespace: jitsi-meet
+data:
+  # JVB Configuration
+  JVB_BREWERY_MUC: "jvbbrewery@internal.auth.jitsi-meet"
+  JVB_ENABLE_STATISTICS: "true"
+  JVB_STATISTICS_TRANSPORT: "http"
+  JVB_STATISTICS_PORT: "8080"
+  
+  # Web Configuration
+  ENABLE_LETSENCRYPT: "false"
+  ENABLE_HTTP_REDIRECT: "true"
+  ENABLE_TRANSCRIPTION: "false"
+  PUBLIC_URL: "https://jitsi.yourdomain.com"
+  
+  # API Configuration
+  JITSI_SERVER_URL: "https://jitsi.yourdomain.com"
+  JITSI_APP_BASE_URL: "https://api.yourdomain.com"
+---
+# JVB Config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jvb-config
+  namespace: jitsi-meet
+data:
+  jvb.conf: |
+    videobridge {
+      http-servers {
+        public {
+          port = 8080
+        }
+      }
+      websockets {
+        enabled = true
+        domain = "jitsi.yourdomain.com:443"
+      }
+      ice {
+        udp {
+          port = 4096
+        }
+        tcp {
+          port = 4096
+          enabled = true
+        }
+      }
+      statistics {
+        enabled = true
+        transport = "http"
+        port = 8080
+      }
+    }
+---
+# Web Config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-config
+  namespace: jitsi-meet
+data:
+  default: |
+    server {
+      listen 80;
+      server_name jitsi.yourdomain.com;
+      
+      location / {
+        proxy_pass http://localhost:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+      }
+    }
+---
+# API WWWRoot Config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-wwwroot
+  namespace: jitsi-meet
+data:
+  meeting.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Jitsi Meeting</title>
+        <script src='https://meet.jit.si/external_api.js'></script>
+    </head>
+    <body>
+        <div id="meet"></div>
+        <script>
+            const domain = 'meet.jit.si';
+            const options = {
+                roomName: new URLSearchParams(window.location.search).get('room'),
+                width: '100%',
+                height: '100%',
+                parentNode: document.querySelector('#meet')
+            };
+            const api = new JitsiMeetExternalAPI(domain, options);
+        </script>
+    </body>
+    </html>
+---
+# Prometheus Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: jitsi-meet
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+
+    rule_files:
+      # - "first_rules.yml"
+      # - "second_rules.yml"
+
+    scrape_configs:
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      - job_name: 'jvb'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
+
+      - job_name: 'jitsi-api'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
+---
+# Grafana Dashboards
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: jitsi-meet
+data:
+  dashboards.yml: |
+    apiVersion: 1
+    providers:
+    - name: 'default'
+      orgId: 1
+      folder: ''
+      type: file
+      disableDeletion: false
+      updateIntervalSeconds: 10
+      allowUiUpdates: true
+      options:
+        path: /etc/grafana/provisioning/dashboards
+
+  jitsi-overview.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "Jitsi Meet Overview",
+        "tags": ["jitsi"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Active Meetings",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "jitsi_meetings_total",
+                "legendFormat": "Meetings"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "Active Participants",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "jitsi_participants_total",
+                "legendFormat": "Participants"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "title": "JVB CPU Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(container_cpu_usage_seconds_total{container=\"jvb\"}[5m])",
+                "legendFormat": "CPU Usage"
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "title": "JVB Memory Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "container_memory_usage_bytes{container=\"jvb\"}",
+                "legendFormat": "Memory Usage"
+              }
+            ]
+          }
+        ]
+      }
+    }
+---
+# Grafana Datasources
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: jitsi-meet
+data:
+  datasources.yml: |
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: http://prometheus-service:9090
+      isDefault: true
+---
+# OpenTelemetry Collector Config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  namespace: jitsi-meet
+data:
+  otel-collector-config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+
+    processors:
+      batch:
+        timeout: 1s
+        send_batch_size: 1024
+
+    exporters:
+      prometheus:
+        endpoint: "0.0.0.0:8888"
+        namespace: "jitsi"
+        const_labels:
+          label1: value1
+      logging:
+        loglevel: debug
+
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [logging]
+        metrics:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [prometheus, logging] 

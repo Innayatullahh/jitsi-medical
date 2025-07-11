@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("JitsiAppointmentApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+24c62bc400f95e0d734de8c55afe98a0f47bdd8f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+df8da871511df31580b3ec28ffa1a92d61e3bdd1")]
 [assembly: System.Reflection.AssemblyProductAttribute("JitsiAppointmentApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("JitsiAppointmentApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

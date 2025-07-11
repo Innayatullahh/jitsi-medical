@@ -10,7 +10,7 @@ services:
     depends_on:
       - db
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/swagger/index.html"]
+      test: ["CMD", "curl", "-f", "http://ai-medical-api.invomail.io/swagger/index.html"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -19,8 +19,8 @@ services:
     image: postgres:15
     environment:
       POSTGRES_DB: jitsi_appointments
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123456
+      POSTGRES_USER: jitsi_appointments_user
+      POSTGRES_PASSWORD: Oxs1fHv9nwXTcR
     ports:
       - "5432:5432"
     networks:

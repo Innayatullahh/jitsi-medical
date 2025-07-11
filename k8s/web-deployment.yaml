@@ -1,0 +1,168 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jitsi-web
+  namespace: jitsi-meet
+  labels:
+    app: jitsi-web
+    component: web-interface
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: jitsi-web
+  template:
+    metadata:
+      labels:
+        app: jitsi-web
+        component: web-interface
+    spec:
+      initContainers:
+      - name: copy-custom-config
+        image: busybox
+        command: ['sh', '-c', 'cp /config/config.js /usr/share/jitsi-meet/config.js']
+        volumeMounts:
+        - name: web-config
+          mountPath: /config
+        - name: jitsi-meet-root
+          mountPath: /usr/share/jitsi-meet
+      containers:
+      - name: jitsi-web
+        image: jitsi/web:stable-8922
+        ports:
+        - containerPort: 80
+          name: http
+        - containerPort: 443
+          name: https
+        env:
+        - name: ENABLE_LETSENCRYPT
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: ENABLE_LETSENCRYPT
+        - name: ENABLE_HTTP_REDIRECT
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: ENABLE_HTTP_REDIRECT
+        - name: ENABLE_TRANSCRIPTION
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: ENABLE_TRANSCRIPTION
+        - name: PUBLIC_URL
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: PUBLIC_URL
+        - name: XMPP_WEBSOCKET_URL
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: XMPP_WEBSOCKET_URL
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: config-data
+          mountPath: /config
+        - name: web-config
+          mountPath: /config/web-config
+          readOnly: true
+        - name: web-config
+          mountPath: /config/config.js
+          subPath: config.js
+          readOnly: true
+        - name: web-certs
+          mountPath: /config/certs
+          readOnly: true
+      volumes:
+      - name: config-data
+        emptyDir: {}
+      - name: web-config
+        configMap:
+          name: web-config
+      - name: jitsi-meet-root
+        emptyDir: {}
+      - name: web-certs
+        secret:
+          secretName: web-certs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jitsi-web-service
+  namespace: jitsi-meet
+  labels:
+    app: jitsi-web
+    component: web-interface
+spec:
+  selector:
+    app: jitsi-web
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  - name: https
+    port: 443
+    targetPort: 443
+  type: LoadBalancer
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: jitsi-web-hpa
+  namespace: jitsi-meet
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: jitsi-web
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60

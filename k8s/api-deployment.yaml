@@ -1,0 +1,137 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jitsi-api
+  namespace: jitsi-meet
+  labels:
+    app: jitsi-api
+    component: appointment-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: jitsi-api
+  template:
+    metadata:
+      labels:
+        app: jitsi-api
+        component: appointment-api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "80"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: jitsi-api
+        image: jitsiappointmentapi:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+          name: http
+        env:
+        - name: ConnectionStrings__DefaultConnection
+          valueFrom:
+            secretKeyRef:
+              name: jitsi-secrets
+              key: DB_CONNECTION_STRING
+        - name: JitsiOptions__ServerUrl
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: JITSI_SERVER_URL
+        - name: JitsiOptions__AppBaseUrl
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: JITSI_APP_BASE_URL
+        - name: JitsiOptions__JwtSecret
+          valueFrom:
+            secretKeyRef:
+              name: jitsi-secrets
+              key: JWT_SECRET
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: wwwroot
+          mountPath: /app/wwwroot
+      volumes:
+      - name: wwwroot
+        configMap:
+          name: api-wwwroot
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jitsi-api-service
+  namespace: jitsi-meet
+  labels:
+    app: jitsi-api
+    component: appointment-api
+spec:
+  selector:
+    app: jitsi-api
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: jitsi-api-hpa
+  namespace: jitsi-meet
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: jitsi-api
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
