@@ -2,8 +2,15 @@
   "ExpandedNodes": [
     "",
     "\\JitsiAppointmentApi",
-    "\\JitsiAppointmentApi\\wwwroot"
+    "\\JitsiAppointmentApi\\Application",
+    "\\JitsiAppointmentApi\\Application\\DTOs",
+    "\\JitsiAppointmentApi\\Application\\Interfaces",
+    "\\JitsiAppointmentApi\\Application\\Services",
+    "\\JitsiAppointmentApi\\Controllers",
+    "\\JitsiAppointmentApi\\Infrastructure\\Data",
+    "\\JitsiAppointmentApi\\Infrastructure\\Repositories",
+    "\\JitsiAppointmentApi\\Infrastructure\\Services"
   ],
-  "SelectedNode": "\\JitsiAppointmentApi\\appsettings.json",
+  "SelectedNode": "\\JitsiAppointmentApi\\Application\\Services\\TimeSlotService.cs",
   "PreviewInSolutionExplorer": false
 }

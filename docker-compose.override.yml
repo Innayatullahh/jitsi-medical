@@ -1,20 +1,25 @@
-version: '3.8'
-
 services:
+  # Add our API service
   jitsiappointmentapi:
-    image: jitsiappointmentapi:latest
+    build:
+      context: ../
+      dockerfile: JitsiAppointmentApi/Dockerfile
     ports:
       - "5000:80"
     networks:
-      - meetnet
+      meet.jitsi:
     depends_on:
       - db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:80
     healthcheck:
       test: ["CMD", "curl", "-f", "http://ai-medical-api.invomail.io/swagger/index.html"]
       interval: 30s
       timeout: 10s
       retries: 3
 
+  # Add our database service
   db:
     image: postgres:15
     environment:
@@ -24,8 +29,15 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - meetnet
+      meet.jitsi:
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
-networks:
-  meetnet:
-    driver: bridge
+  # Override web service to use our custom port
+  web:
+    ports:
+      - "8000:80"
+      - "8443:443"
+
+volumes:
+  postgres_data:

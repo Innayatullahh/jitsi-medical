@@ -1,74 +1,89 @@
-﻿using JitsiAppointmentApi.Config;
-using JitsiAppointmentApi.Data;
-using JitsiAppointmentApi.Models;
-using JitsiAppointmentApi.Services;
+﻿using JitsiAppointmentApi.Application.DTOs;
+using JitsiAppointmentApi.Application.Interfaces;
+using JitsiAppointmentApi.Core.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace JitsiAppointmentApi.Controllers
 {
-    [Authorize]
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v1/meetings")]
+    [Authorize]
     public class MeetingsController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        private readonly JitsiJwtService _jitsiJwtService;
-        private readonly JitsiOptions _jitsiOptions;
+        private readonly IMeetingService _meetingService;
 
-        public MeetingsController(AppDbContext context, JitsiJwtService jitsiJwtService, IOptions<JitsiOptions> jitsiOptions)
+        public MeetingsController(IMeetingService meetingService)
         {
-            _context = context;
-            _jitsiJwtService = jitsiJwtService;
-            _jitsiOptions = jitsiOptions.Value;
+            _meetingService = meetingService;
         }
 
-        // POST: api/meetings
+        /// <summary>
+        /// Create a new meeting
+        /// </summary>
+        /// <param name="request">Meeting information</param>
+        /// <returns>Created meeting</returns>
+        /// <response code="201">Meeting created successfully</response>
+        /// <response code="400">Invalid request data</response>
         [HttpPost]
-        public async Task<ActionResult<Meeting>> CreateMeeting([FromBody] Meeting meeting)
+        [ProducesResponseType(typeof(CreateMeetingResponse), 201)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<CreateMeetingResponse>> CreateMeeting([FromBody] CreateMeetingRequest request)
         {
-            // Generate a unique Jitsi room name
-            meeting.RoomName = $"jitsi-{Guid.NewGuid()}";
-            _context.Meetings.Add(meeting);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetMeeting), new { id = meeting.Id }, meeting);
-        }
-
-        // GET: api/meetings/{id}
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Meeting>> GetMeeting(int id)
-        {
-            var meeting = await _context.Meetings.FindAsync(id);
-            if (meeting == null)
-                return NotFound();
-            return meeting;
-        }
-
-        // GET: api/meetings/{id}/join-link
-        [HttpGet("{id}/join-link")]
-        public async Task<ActionResult<object>> GetJoinLink(int id, [FromQuery] string userName, [FromQuery] string userEmail)
-        {
-            var meeting = await _context.Meetings.FindAsync(id);
-            if (meeting == null)
-                return NotFound();
-
-            // Generate JWT for this user and room
-            var token = _jitsiJwtService.GenerateToken(meeting.RoomName, userName, userEmail);            
-            //var directJoinUrl = $"{_jitsiOptions.ServerUrl}/{meeting.RoomName}?jwt={token}";
-            var customJoinUrl = $"{_jitsiOptions.AppBaseUrl}/meeting.html?room={meeting.RoomName}&jwt={token}";
-
-            return Ok(new
+            var result = await _meetingService.CreateMeetingAsync(request);
+            
+            if (result.Status == "error")
             {
-                meeting.Id,
-                meeting.DoctorName,
-                meeting.PatientName,
-                meeting.ScheduledAt,
-                meeting.RoomName,
-                //DirectJoinUrl = directJoinUrl,
-                CustomJoinUrl = customJoinUrl
-            });
+                return BadRequest(result);
+            }
+            
+            return CreatedAtAction(nameof(GetMeeting), new { id = result.Data?.Id }, result);
+        }
+
+        /// <summary>
+        /// Get a meeting by ID
+        /// </summary>
+        /// <param name="id">Meeting ID</param>
+        /// <returns>Meeting details</returns>
+        /// <response code="200">Returns the meeting</response>
+        /// <response code="404">Meeting not found</response>
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(MeetingResponse), 200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<MeetingResponse>> GetMeeting(int id)
+        {
+            var meeting = await _meetingService.GetMeetingByIdAsync(id);
+            
+            if (meeting == null)
+            {
+                return NotFound("Meeting not found");
+            }
+            
+            return Ok(meeting);
+        }
+
+        /// <summary>
+        /// Get join link for a meeting
+        /// </summary>
+        /// <param name="id">Meeting ID</param>
+        /// <param name="userName">User name</param>
+        /// <returns>Join link information</returns>
+        /// <response code="200">Returns the join link</response>
+        /// <response code="404">Meeting not found</response>
+        [HttpGet("{id}/join-link")]
+        [ProducesResponseType(typeof(JoinLinkResponse), 200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<JoinLinkResponse>> GetJoinLink(int id, [FromQuery] string userName)
+        {
+            var joinLink = await _meetingService.GetJoinLinkAsync(id, userName);
+            
+            if (joinLink == null)
+            {
+                return NotFound("Meeting not found");
+            }
+            
+            return Ok(joinLink);
         }
     }
 }

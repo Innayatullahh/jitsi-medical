@@ -1,11 +1,11 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using JitsiAppointmentApi.Config;
+using JitsiAppointmentApi.Infrastructure.Config;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace JitsiAppointmentApi.Services
+namespace JitsiAppointmentApi.Infrastructure.Services
 {
     public class JitsiJwtService
     {
@@ -44,4 +44,4 @@ namespace JitsiAppointmentApi.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
-}
+} 

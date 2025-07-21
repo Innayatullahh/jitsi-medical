@@ -1,59 +1,41 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+﻿using JitsiAppointmentApi.Application.DTOs;
+using JitsiAppointmentApi.Application.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace JitsiAppointmentApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/auth")]
     public class AuthController : ControllerBase
     {
-        private readonly IConfiguration _config;
-        public AuthController(IConfiguration config)
+        private readonly IAuthService _authService;
+
+        public AuthController(IAuthService authService)
         {
-            _config = config;
+            _authService = authService;
         }
 
+        /// <summary>
+        /// Authenticate user and get JWT token
+        /// </summary>
+        /// <param name="request">Login credentials</param>
+        /// <returns>JWT token for authentication</returns>
+        /// <response code="200">Login successful</response>
+        /// <response code="401">Invalid credentials</response>
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginModel login)
+        [ProducesResponseType(typeof(LoginResponse), 200)]
+        [ProducesResponseType(401)]
+        public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
         {
-            // Simple hardcoded check (for demo only!)
-            if (login.Username == "demo" && login.Password == "password")
+            var result = await _authService.LoginAsync(request);
+            
+            if (result.Status == "error")
             {
-                var token = GenerateJwtToken(login.Username);
-                return Ok(new { token });
+                return Unauthorized(result);
             }
-            return Unauthorized();
+            
+            return Ok(result);
         }
-
-        private string GenerateJwtToken(string username)
-        {
-            var jwtSettings = _config.GetSection("Jwt");
-            var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSettings["Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.Name, username)
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: jwtSettings["Issuer"],
-                audience: jwtSettings["Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-    }
-
-    public class LoginModel
-    {
-        public string Username { get; set; }
-        public string Password { get; set; }
     }
 }

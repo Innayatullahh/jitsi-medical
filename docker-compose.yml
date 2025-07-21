@@ -29,6 +29,8 @@ services:
       - "5432:5432"
     networks:
       - meetnet
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
   prosody:
     image: jitsi/prosody:stable-8922
     networks:
@@ -81,6 +83,9 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
 
+volumes:
+  postgres_data:
+
 networks:
   meetnet:
-    driver: overlay 
+    driver: bridge 
