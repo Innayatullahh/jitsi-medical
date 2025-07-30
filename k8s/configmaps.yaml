@@ -20,6 +20,22 @@ data:
   # API Configuration
   JITSI_SERVER_URL: "https://jitsi.yourdomain.com"
   JITSI_APP_BASE_URL: "https://api.yourdomain.com"
+  
+  # CORS Configuration
+  CORS__ALLOWEDORIGINS__0: "http://localhost:3000"
+  CORS__ALLOWEDORIGINS__1: "http://localhost:3001"
+  CORS__ALLOWEDORIGINS__2: "http://localhost:4200"
+  CORS__ALLOWEDORIGINS__3: "http://localhost:8080"
+  CORS__ALLOWEDORIGINS__4: "http://localhost:5173"
+  CORS__ALLOWEDORIGINS__5: "http://127.0.0.1:3000"
+  CORS__ALLOWEDORIGINS__6: "http://127.0.0.1:3001"
+  CORS__ALLOWEDORIGINS__7: "http://127.0.0.1:4200"
+  CORS__ALLOWEDORIGINS__8: "http://127.0.0.1:8080"
+  CORS__ALLOWEDORIGINS__9: "http://127.0.0.1:5173"
+  CORS__ALLOWEDORIGINS__10: "https://ai-medical-api.invomail.io"
+  CORS__ALLOWEDORIGINS__11: "https://meet.invomail.io"
+  CORS__ALLOWEDORIGINS__12: "https://jitsi.yourdomain.com"
+  CORS__ALLOWEDORIGINS__13: "https://api.yourdomain.com"
 ---
 # JVB Config
 apiVersion: v1

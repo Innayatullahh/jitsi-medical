@@ -15,6 +15,42 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add CORS configuration
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+    
+    // More restrictive policy for production
+    options.AddPolicy("AllowSpecificOrigins", policy =>
+    {
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? new string[]
+        {
+            "http://localhost:3000",     // React default
+            "http://localhost:3001",     // React alternative
+            "http://localhost:4200",     // Angular default
+            "http://localhost:8080",     // Vue default
+            "http://localhost:5173",     // Vite default
+            "http://127.0.0.1:3000",
+            "http://127.0.0.1:3001",
+            "http://127.0.0.1:4200",
+            "http://127.0.0.1:8080",
+            "http://127.0.0.1:5173",
+            "https://ai-medical-api.invomail.io",  // Your production API
+            "https://meet.invomail.io"             // Your Jitsi server
+        };
+        
+        policy.WithOrigins(allowedOrigins)
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+});
+
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -193,6 +229,17 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
     c.DocumentTitle = "Jitsi Appointment API Documentation";
 });
+
+// Use CORS - Choose the appropriate policy based on environment
+var environment = app.Environment;
+if (environment.IsDevelopment())
+{
+    app.UseCors("AllowAll"); // More permissive for development
+}
+else
+{
+    app.UseCors("AllowSpecificOrigins"); // More restrictive for production
+}
 
 app.UseAuthentication();
 app.UseAuthorization();

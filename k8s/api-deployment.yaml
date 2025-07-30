@@ -49,6 +49,77 @@ spec:
             secretKeyRef:
               name: jitsi-secrets
               key: JWT_SECRET
+        # CORS Configuration
+        - name: Cors__AllowedOrigins__0
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: CORS__ALLOWEDORIGINS__0
+        - name: Cors__AllowedOrigins__1
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: CORS__ALLOWEDORIGINS__1
+        - name: Cors__AllowedOrigins__2
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: CORS__ALLOWEDORIGINS__2
+        - name: Cors__AllowedOrigins__3
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: CORS__ALLOWEDORIGINS__3
+        - name: Cors__AllowedOrigins__4
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: CORS__ALLOWEDORIGINS__4
+        - name: Cors__AllowedOrigins__5
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: CORS__ALLOWEDORIGINS__5
+        - name: Cors__AllowedOrigins__6
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: CORS__ALLOWEDORIGINS__6
+        - name: Cors__AllowedOrigins__7
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: CORS__ALLOWEDORIGINS__7
+        - name: Cors__AllowedOrigins__8
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: CORS__ALLOWEDORIGINS__8
+        - name: Cors__AllowedOrigins__9
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: CORS__ALLOWEDORIGINS__9
+        - name: Cors__AllowedOrigins__10
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: CORS__ALLOWEDORIGINS__10
+        - name: Cors__AllowedOrigins__11
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: CORS__ALLOWEDORIGINS__11
+        - name: Cors__AllowedOrigins__12
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: CORS__ALLOWEDORIGINS__12
+        - name: Cors__AllowedOrigins__13
+          valueFrom:
+            configMapKeyRef:
+              name: jitsi-config
+              key: CORS__ALLOWEDORIGINS__13
         resources:
           requests:
             memory: "256Mi"
