@@ -43,8 +43,15 @@ namespace JitsiAppointmentApi.Application.Services
                 };
             }
 
-            // Convert time ranges to JSON
-            var timeRangesJson = System.Text.Json.JsonSerializer.Serialize(request.TimeRanges);
+
+
+            // Convert time ranges to JSON (allow empty time ranges)
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                WriteIndented = false
+            };
+            var timeRangesJson = System.Text.Json.JsonSerializer.Serialize(request.TimeRanges ?? new List<TimeRange>(), jsonOptions);
 
             var template = new ConsultationTemplate
             {
@@ -94,13 +101,18 @@ namespace JitsiAppointmentApi.Application.Services
         private static ConsultationTemplateResponse MapToConsultationTemplateResponse(ConsultationTemplate template)
         {
             // Parse time ranges from JSON
-            var timeRanges = System.Text.Json.JsonSerializer.Deserialize<List<TimeRange>>(template.TimeRangesJson) ?? new List<TimeRange>();
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            };
+            var timeRanges = System.Text.Json.JsonSerializer.Deserialize<List<TimeRange>>(template.TimeRangesJson, jsonOptions) ?? new List<TimeRange>();
             
             // Convert to TimeRangeWithSlots and generate time slots
             var timeRangesWithSlots = timeRanges.Select(tr => new TimeRangeWithSlots
             {
                 Start = tr.Start,
                 End = tr.End,
+                IsBooked = tr.IsBooked,
                 TimeSlots = GenerateTimeSlots(tr.Start, tr.End, template.Interval)
             }).ToList();
 

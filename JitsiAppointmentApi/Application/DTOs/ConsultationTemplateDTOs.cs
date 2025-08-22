@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace JitsiAppointmentApi.Application.DTOs
 {
@@ -22,8 +23,14 @@ namespace JitsiAppointmentApi.Application.DTOs
 
     public class TimeRange
     {
+        [JsonPropertyName("start")]
         public string Start { get; set; } = string.Empty;
+        
+        [JsonPropertyName("end")]
         public string End { get; set; } = string.Empty;
+        
+        [JsonPropertyName("isBooked")]
+        public bool IsBooked { get; set; } = false;
     }
 
     public class TimeRangeWithSlots : TimeRange
