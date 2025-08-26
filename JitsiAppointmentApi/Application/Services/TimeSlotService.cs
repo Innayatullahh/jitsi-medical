@@ -28,7 +28,7 @@ namespace JitsiAppointmentApi.Application.Services
                         Message = "Date is required for non-recurring time slots"
                     };
                 }
-                
+
                 // Validate date format
                 if (!DateTime.TryParse(request.Date, out _))
                 {
@@ -41,7 +41,7 @@ namespace JitsiAppointmentApi.Application.Services
             }
             else
             {
-                // Recurring: RecurringDays is mandatory, Date is optional
+                // Recurring: RecurringDays is mandatory, Date must be empty
                 if (request.RecurringDays == null || request.RecurringDays.Count == 0)
                 {
                     return new CreateTimeSlotResponse
@@ -50,15 +50,53 @@ namespace JitsiAppointmentApi.Application.Services
                         Message = "Recurring days are required for recurring time slots"
                     };
                 }
+
+                if (!string.IsNullOrEmpty(request.Date))
+                {
+                    return new CreateTimeSlotResponse
+                    {
+                        Status = "error",
+                        Message = "Date should not be provided for recurring time slots"
+                    };
+                }
             }
-            
+
+            // Validate Start/End times
+            if (!TimeSpan.TryParse(request.StartTime, out var start) ||
+                !TimeSpan.TryParse(request.EndTime, out var end))
+            {
+                return new CreateTimeSlotResponse
+                {
+                    Status = "error",
+                    Message = "Invalid time format. Use HH:mm (e.g., 09:30)"
+                };
+            }
+
+            if (start >= end)
+            {
+                return new CreateTimeSlotResponse
+                {
+                    Status = "error",
+                    Message = "Start time must be before end time"
+                };
+            }
+
             // Generate a unique ID
             var timeSlotId = Guid.NewGuid().ToString("N").Substring(0, 8);
-            
-            // Convert recurring days to JSON
-            var recurringDaysJson = System.Text.Json.JsonSerializer.Serialize(request.RecurringDays);
 
-            // Parse date if provided
+            // Only store recurring days if recurring
+            string recurringDaysJson = "[]";
+            if (request.IsRecurring && request.RecurringDays != null)
+            {
+                var cleanedDays = request.RecurringDays
+                    .Where(d => !string.IsNullOrWhiteSpace(d))
+                    .Select(d => d.Trim().ToLower())
+                    .ToList();
+
+                recurringDaysJson = System.Text.Json.JsonSerializer.Serialize(cleanedDays);
+            }
+
+            // Parse date only for non-recurring
             DateTime? parsedDate = null;
             if (!string.IsNullOrEmpty(request.Date) && DateTime.TryParse(request.Date, out var date))
             {
@@ -89,7 +127,7 @@ namespace JitsiAppointmentApi.Application.Services
         public async Task<TimeSlotsByDayResponse> GetTimeSlotsByDayAsync(string date)
         {
             DateTime parsedDate;
-            
+
             // Try common date formats automatically
             string[] commonFormats = { "yyyy-MM-dd", "MM/dd/yyyy", "dd-MM-yyyy", "yyyy/MM/dd", "dd/MM/yyyy" };
             if (!DateTime.TryParseExact(date, commonFormats, null, System.Globalization.DateTimeStyles.None, out parsedDate))
@@ -104,10 +142,10 @@ namespace JitsiAppointmentApi.Application.Services
             // Ensure the date is in UTC
             var utcDate = DateTime.SpecifyKind(parsedDate.Date, DateTimeKind.Utc);
             var dayOfWeek = utcDate.DayOfWeek.ToString().ToLower();
-            
+
             var timeSlots = await _timeSlotRepository.GetByDateAsync(utcDate);
             var recurringTimeSlots = await _timeSlotRepository.GetRecurringByDayOfWeekAsync(dayOfWeek);
-            
+
             var allTimeSlots = timeSlots.Concat(recurringTimeSlots).Distinct().ToList();
 
             return new TimeSlotsByDayResponse
@@ -120,7 +158,7 @@ namespace JitsiAppointmentApi.Application.Services
         public async Task<TimeSlotsByWeekResponse> GetTimeSlotsByWeekAsync(string startDate)
         {
             DateTime parsedDate;
-            
+
             // Try common date formats automatically
             string[] commonFormats = { "yyyy-MM-dd", "MM/dd/yyyy", "dd-MM-yyyy", "yyyy/MM/dd", "dd/MM/yyyy" };
             if (!DateTime.TryParseExact(startDate, commonFormats, null, System.Globalization.DateTimeStyles.None, out parsedDate))
@@ -134,8 +172,7 @@ namespace JitsiAppointmentApi.Application.Services
 
             // Ensure the start date is in UTC
             var utcStartDate = DateTime.SpecifyKind(parsedDate.Date, DateTimeKind.Utc);
-            var endDate = utcStartDate.AddDays(6);
-            
+
             var response = new TimeSlotsByWeekResponse
             {
                 Status = "success",
@@ -146,10 +183,10 @@ namespace JitsiAppointmentApi.Application.Services
             {
                 var currentDate = utcStartDate.AddDays(i);
                 var dayOfWeek = currentDate.DayOfWeek.ToString().ToLower();
-                
+
                 var timeSlots = await _timeSlotRepository.GetByDateAsync(currentDate);
                 var recurringTimeSlots = await _timeSlotRepository.GetRecurringByDayOfWeekAsync(dayOfWeek);
-                
+
                 var allTimeSlots = timeSlots.Concat(recurringTimeSlots).Distinct().ToList();
 
                 response.Data[dayOfWeek] = allTimeSlots.Select(MapToTimeSlotResponse).ToList();
@@ -172,7 +209,7 @@ namespace JitsiAppointmentApi.Application.Services
             // Ensure the start date is in UTC
             var utcStartDate = DateTime.SpecifyKind(startDate.Date, DateTimeKind.Utc);
             var endDate = utcStartDate.AddMonths(1).AddDays(-1);
-            
+
             var response = new TimeSlotsByMonthResponse
             {
                 Status = "success",
@@ -184,10 +221,10 @@ namespace JitsiAppointmentApi.Application.Services
             {
                 var dayOfWeek = currentDate.DayOfWeek.ToString().ToLower();
                 var dateKey = currentDate.ToString("yyyy-MM-dd");
-                
+
                 var timeSlots = await _timeSlotRepository.GetByDateAsync(currentDate);
                 var recurringTimeSlots = await _timeSlotRepository.GetRecurringByDayOfWeekAsync(dayOfWeek);
-                
+
                 var allTimeSlots = timeSlots.Concat(recurringTimeSlots).Distinct().ToList();
 
                 response.Data[dateKey] = allTimeSlots.Select(MapToTimeSlotResponse).ToList();
@@ -201,7 +238,7 @@ namespace JitsiAppointmentApi.Application.Services
         public async Task<DeleteTimeSlotResponse> DeleteTimeSlotAsync(string id)
         {
             var timeSlot = await _timeSlotRepository.GetByIdAsync(id);
-            
+
             if (timeSlot == null)
             {
                 return new DeleteTimeSlotResponse
@@ -236,7 +273,7 @@ namespace JitsiAppointmentApi.Application.Services
         {
             // Parse recurring days from JSON
             var recurringDays = System.Text.Json.JsonSerializer.Deserialize<List<string>>(timeSlot.RecurringDaysJson) ?? new List<string>();
-            
+
             return new TimeSlotData
             {
                 Id = timeSlot.Id,
@@ -249,4 +286,4 @@ namespace JitsiAppointmentApi.Application.Services
             };
         }
     }
-} 
+}
