@@ -9,6 +9,12 @@ namespace JitsiAppointmentApi.Application.DTOs
         public bool IsVirtual { get; set; }
         public bool IsRecurring { get; set; }
         public List<string> RecurringDays { get; set; } = new List<string>();
+        
+        /// <summary>
+        /// Date for non-recurring time slots. Required when IsRecurring is false, optional when IsRecurring is true.
+        /// Format: yyyy-MM-dd
+        /// </summary>
+        public string? Date { get; set; } = null;
     }
 
     public class TimeSlotResponse
@@ -35,6 +41,11 @@ namespace JitsiAppointmentApi.Application.DTOs
         public bool IsVirtual { get; set; }
         public bool IsRecurring { get; set; }
         public List<string> RecurringDays { get; set; } = new List<string>();
+        
+        /// <summary>
+        /// Date for non-recurring time slots
+        /// </summary>
+        public string? Date { get; set; } = null;
     }
 
     public class TimeSlotsByDayResponse

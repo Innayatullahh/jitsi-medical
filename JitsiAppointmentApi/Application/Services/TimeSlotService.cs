@@ -16,11 +16,54 @@ namespace JitsiAppointmentApi.Application.Services
 
         public async Task<CreateTimeSlotResponse> CreateTimeSlotAsync(CreateTimeSlotRequest request)
         {
+            // Validate request based on recurring vs non-recurring
+            if (!request.IsRecurring)
+            {
+                // Non-recurring: Date is mandatory
+                if (string.IsNullOrEmpty(request.Date))
+                {
+                    return new CreateTimeSlotResponse
+                    {
+                        Status = "error",
+                        Message = "Date is required for non-recurring time slots"
+                    };
+                }
+                
+                // Validate date format
+                if (!DateTime.TryParse(request.Date, out _))
+                {
+                    return new CreateTimeSlotResponse
+                    {
+                        Status = "error",
+                        Message = "Invalid date format. Use yyyy-MM-dd format"
+                    };
+                }
+            }
+            else
+            {
+                // Recurring: RecurringDays is mandatory, Date is optional
+                if (request.RecurringDays == null || request.RecurringDays.Count == 0)
+                {
+                    return new CreateTimeSlotResponse
+                    {
+                        Status = "error",
+                        Message = "Recurring days are required for recurring time slots"
+                    };
+                }
+            }
+            
             // Generate a unique ID
             var timeSlotId = Guid.NewGuid().ToString("N").Substring(0, 8);
             
             // Convert recurring days to JSON
             var recurringDaysJson = System.Text.Json.JsonSerializer.Serialize(request.RecurringDays);
+
+            // Parse date if provided
+            DateTime? parsedDate = null;
+            if (!string.IsNullOrEmpty(request.Date) && DateTime.TryParse(request.Date, out var date))
+            {
+                parsedDate = DateTime.SpecifyKind(date.Date, DateTimeKind.Utc);
+            }
 
             var timeSlot = new TimeSlot
             {
@@ -29,7 +72,8 @@ namespace JitsiAppointmentApi.Application.Services
                 EndTime = request.EndTime,
                 IsVirtual = request.IsVirtual,
                 IsRecurring = request.IsRecurring,
-                RecurringDaysJson = recurringDaysJson
+                RecurringDaysJson = recurringDaysJson,
+                Date = parsedDate
             };
 
             var createdTimeSlot = await _timeSlotRepository.AddAsync(timeSlot);
@@ -200,7 +244,8 @@ namespace JitsiAppointmentApi.Application.Services
                 EndTime = timeSlot.EndTime,
                 IsVirtual = timeSlot.IsVirtual,
                 IsRecurring = timeSlot.IsRecurring,
-                RecurringDays = recurringDays
+                RecurringDays = recurringDays,
+                Date = timeSlot.Date?.ToString("yyyy-MM-dd")
             };
         }
     }
