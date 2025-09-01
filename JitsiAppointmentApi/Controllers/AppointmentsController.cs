@@ -1,4 +1,5 @@
 ﻿using JitsiAppointmentApi.Application.DTOs;
+using JitsiAppointmentApi.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,77 +11,97 @@ namespace JitsiAppointmentApi.Controllers
     [Authorize]
     public class AppointmentsController : ControllerBase
     {
-        private static readonly List<AppointmentResponse> appointments = new()
-        {
-            new AppointmentResponse
-            {
-                Id = "a1",
-                Name = "John Smith",
-                Date = "2025-06-23",
-                StartTime = "10:30",
-                EndTime = "11:30",
-                Type = "Virtual",
-                Status = "Completed"
-            },
-            new AppointmentResponse
-            {
-                Id = "a2",
-                Name = "Alice Johnson",
-                Date = "2025-06-24",
-                StartTime = "12:00",
-                EndTime = "13:00",
-                Type = "In-Person",
-                Status = "Upcoming"
-            }
-        };
+        private readonly IMeetingService _meetingService;
 
-        private static readonly List<AppointmentDetailResponse> appointmentDetails = new()
+        public AppointmentsController(IMeetingService meetingService)
         {
-            new AppointmentDetailResponse
-            {
-                Id = "a1",
-                PatientName = "John Smith",
-                Date = "2025-06-23",
-                StartTime = "10:30 AM",
-                EndTime = "11:30 AM",
-                Type = "Virtual Appointment",
-                AppoinmentsDetailsi = new List<string> { "Annual Checkup" },
-                PatientHistory = new List<string>
-                {
-                    "Type 2 Diabetes (Diagnosed in 2018)",
-                    "Penicillin",
-                    "Recurring headaches, MRI advised",
-                    "Appendectomy (2016)",
-                    "Metformin 500mg twice daily",
-                    "Father - Cardiac Issues, Mother - Diabetic",
-                    "COVID-19 (2 doses, booster pending)"
-                },
-                PatientNotes = new List<string>
-                {
-                    "Mild chest discomfort after meals",
-                    "Difficulty sleeping due to anxiety",
-                    "Currently taking herbal supplements",
-                    "Exercises 30 mins daily (walking)",
-                    "Avoiding salt and sugar in diet",
-                    "Recommended for specialist consult by family physician"
-                }
-            }
-        };
+            _meetingService = meetingService;
+        }
 
         /// <summary>
-        /// Get appointments
+        /// Get appointments with pagination support
         /// </summary>
-        /// <response code="200">Application is healthy</response>
-        /// <response code="503">Application is unhealthy</response>
+        /// <param name="page">Page number (default: 1)</param>
+        /// <param name="pageSize">Number of items per page (default: 10, max: 50)</param>
+        /// <response code="200">Returns paginated appointments successfully</response>
+        /// <response code="400">Invalid pagination parameters</response>
+        /// <response code="503">No appointments available</response>
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<AppointmentResponse>), 200)]
+        [ProducesResponseType(typeof(PaginatedAppointmentsResponse), 200)]
+        [ProducesResponseType(400)]
         [ProducesResponseType(503)]
-        public async Task<IActionResult> GetAppointments()
+        public async Task<IActionResult> GetAppointments(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
         {
-            if (appointments.Count == 0)
-                return StatusCode(503, new { status = "error", message = "No appointments available" });
+            // Validate pagination parameters
+            if (page < 1)
+            {
+                return BadRequest(new { status = "error", message = "Page number must be greater than 0" });
+            }
 
-            return Ok(new { status = "success", data = appointments });
+            if (pageSize < 1 || pageSize > 50)
+            {
+                return BadRequest(new { status = "error", message = "Page size must be between 1 and 50" });
+            }
+
+            try
+            {
+                // Get all meetings from database
+                var allMeetings = await _meetingService.GetAllMeetingsAsync();
+                
+                if (allMeetings == null || !allMeetings.Any())
+                {
+                    return StatusCode(503, new { status = "error", message = "No appointments available" });
+                }
+
+                // Convert meetings to appointment responses
+                var appointments = allMeetings.Select(m => new AppointmentResponse
+                {
+                    Id = m.Id.ToString(),
+                    Name = m.PatientName,
+                    Date = m.ScheduledAt.ToString("yyyy-MM-dd"),
+                    StartTime = m.ScheduledAt.ToString("HH:mm"),
+                    EndTime = m.ScheduledAt.AddHours(1).ToString("HH:mm"), // Assuming 1-hour appointments
+                    Type = "Virtual", // Default to virtual for now
+                    Status = m.ScheduledAt > DateTime.UtcNow ? "Upcoming" : "Completed"
+                }).OrderByDescending(a => a.Date).ToList();
+
+                // Calculate pagination
+                var totalCount = appointments.Count;
+                var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+                var skip = (page - 1) * pageSize;
+
+                // Get paginated data
+                var paginatedAppointments = appointments
+                    .Skip(skip)
+                    .Take(pageSize)
+                    .ToList();
+
+                // Create pagination metadata
+                var pagination = new PaginationMetadata
+                {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    TotalCount = totalCount,
+                    TotalPages = totalPages,
+                    HasNext = page < totalPages,
+                    HasPrevious = page > 1
+                };
+
+                var response = new PaginatedAppointmentsResponse
+                {
+                    Status = "success",
+                    Data = paginatedAppointments,
+                    Pagination = pagination
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { status = "error", message = "Internal server error", details = ex.Message });
+            }
         }
 
         /// <summary>
@@ -89,20 +110,50 @@ namespace JitsiAppointmentApi.Controllers
         /// <param name="id">The unique identifier of the appointment.</param>
         /// <response code="200">Returns the appointment details successfully.</response>
         /// <response code="404">Appointment with the specified ID was not found.</response>
-
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(AppointmentDetailResponse), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetAppointmentDetail(string id)
         {
-            await Task.Delay(10);
+            try
+            {
+                if (!int.TryParse(id, out int meetingId))
+                {
+                    return BadRequest(new { status = "error", message = "Invalid appointment ID format" });
+                }
 
-            var detail = appointmentDetails.FirstOrDefault(a => a.Id == id);
+                var meeting = await _meetingService.GetMeetingByIdAsync(meetingId);
 
-            if (detail == null)
-                return NotFound(new { status = "error", message = "Appointment not found" });
+                if (meeting == null)
+                {
+                    return NotFound(new { status = "error", message = "Appointment not found" });
+                }
 
-            return Ok(new { status = "success", data = detail });
+                var detail = new AppointmentDetailResponse
+                {
+                    Id = meeting.Id.ToString(),
+                    PatientName = meeting.PatientName,
+                    Date = meeting.ScheduledAt.ToString("yyyy-MM-dd"),
+                    StartTime = meeting.ScheduledAt.ToString("HH:mm"),
+                    EndTime = meeting.ScheduledAt.AddHours(1).ToString("HH:mm"),
+                    Type = "Virtual Appointment",
+                    AppoinmentsDetailsi = new List<string> { "General Consultation" },
+                    PatientHistory = new List<string>
+                    {
+                        "No previous medical history available"
+                    },
+                    PatientNotes = new List<string>
+                    {
+                        "Appointment scheduled via system"
+                    }
+                };
+
+                return Ok(new { status = "success", data = detail });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { status = "error", message = "Internal server error", details = ex.Message });
+            }
         }
     }
 }

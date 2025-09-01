@@ -68,6 +68,11 @@ namespace JitsiAppointmentApi.Application.Services
             };
         }
 
+        public async Task<IEnumerable<Meeting>> GetAllMeetingsAsync()
+        {
+            return await _meetingRepository.GetAllAsync();
+        }
+
         private static MeetingResponse MapToMeetingResponse(Meeting meeting)
         {
             return new MeetingResponse

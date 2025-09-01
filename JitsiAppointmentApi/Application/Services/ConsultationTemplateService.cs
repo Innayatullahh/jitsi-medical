@@ -1,4 +1,4 @@
-using JitsiAppointmentApi.Application.DTOs;
+﻿using JitsiAppointmentApi.Application.DTOs;
 using JitsiAppointmentApi.Application.Interfaces;
 using JitsiAppointmentApi.Core.Entities;
 using JitsiAppointmentApi.Core.Interfaces;
@@ -16,17 +16,8 @@ namespace JitsiAppointmentApi.Application.Services
 
         public async Task<CreateConsultationTemplateResponse> CreateTemplateAsync(CreateConsultationTemplateRequest request)
         {
-            // Parse dates
-            if (!DateTime.TryParse(request.StartDate, out var startDate) || !DateTime.TryParse(request.EndDate, out var endDate))
-            {
-                return new CreateConsultationTemplateResponse
-                {
-                    Message = "Invalid date format. Use YYYY-MM-DD format."
-                };
-            }
-
             // Validate date range
-            if (startDate >= endDate)
+            if (request.StartDate >= request.EndDate)
             {
                 return new CreateConsultationTemplateResponse
                 {
@@ -43,20 +34,18 @@ namespace JitsiAppointmentApi.Application.Services
                 };
             }
 
-
-
-            // Convert time ranges to JSON (allow empty time ranges)
+            // Convert time ranges to JSON
             var jsonOptions = new System.Text.Json.JsonSerializerOptions
             {
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
                 WriteIndented = false
             };
-            var timeRangesJson = System.Text.Json.JsonSerializer.Serialize(request.TimeRanges ?? new List<TimeRange>(), jsonOptions);
+            var timeRangesJson = System.Text.Json.JsonSerializer.Serialize(request.TimeRanges ?? new List<TimeRangeInput>(), jsonOptions);
 
             var template = new ConsultationTemplate
             {
-                StartDate = DateTime.SpecifyKind(startDate, DateTimeKind.Utc),
-                EndDate = DateTime.SpecifyKind(endDate, DateTimeKind.Utc),
+                StartDate = DateTime.SpecifyKind(request.StartDate, DateTimeKind.Utc),
+                EndDate = DateTime.SpecifyKind(request.EndDate, DateTimeKind.Utc),
                 Interval = request.Interval,
                 TimeRangesJson = timeRangesJson
             };
@@ -66,7 +55,7 @@ namespace JitsiAppointmentApi.Application.Services
             return new CreateConsultationTemplateResponse
             {
                 Message = "Template saved successfully.",
-                Template = MapToConsultationTemplateResponse(createdTemplate)
+                Data = MapToConsultationTemplateResponse(createdTemplate)
             };
         }
 
@@ -105,14 +94,26 @@ namespace JitsiAppointmentApi.Application.Services
             {
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
             };
-            var timeRanges = System.Text.Json.JsonSerializer.Deserialize<List<TimeRange>>(template.TimeRangesJson, jsonOptions) ?? new List<TimeRange>();
+            
+            // Handle both old and new JSON formats
+            List<TimeRangeInput> timeRangeInputs;
+            try
+            {
+                // Try to parse as new format first
+                timeRangeInputs = System.Text.Json.JsonSerializer.Deserialize<List<TimeRangeInput>>(template.TimeRangesJson, jsonOptions) ?? new List<TimeRangeInput>();
+            }
+            catch
+            {
+                // Fallback to old format if needed
+                var oldTimeRanges = System.Text.Json.JsonSerializer.Deserialize<List<TimeRange>>(template.TimeRangesJson, jsonOptions) ?? new List<TimeRange>();
+                timeRangeInputs = oldTimeRanges.Select(tr => new TimeRangeInput { Start = tr.Start, End = tr.End }).ToList();
+            }
             
             // Convert to TimeRangeWithSlots and generate time slots
-            var timeRangesWithSlots = timeRanges.Select(tr => new TimeRangeWithSlots
+            var timeRangesWithSlots = timeRangeInputs.Select(tr => new TimeRangeWithSlots
             {
                 Start = tr.Start,
                 End = tr.End,
-                IsBooked = tr.IsBooked,
                 TimeSlots = GenerateTimeSlots(tr.Start, tr.End, template.Interval)
             }).ToList();
 
@@ -122,25 +123,51 @@ namespace JitsiAppointmentApi.Application.Services
                 StartDate = template.StartDate.ToString("yyyy-MM-dd"),
                 EndDate = template.EndDate.ToString("yyyy-MM-dd"),
                 Interval = template.Interval,
-                TimeRanges = timeRangesWithSlots
+                TimeRanges = timeRangesWithSlots,
+                IsActive = template.IsActive,
+                CreatedAt = template.CreatedAt,
+                UpdatedAt = template.UpdatedAt
             };
         }
 
-        private static List<string> GenerateTimeSlots(string startTime, string endTime, int intervalMinutes)
+        private static List<TimeSlotDto> GenerateTimeSlots(string startTime, string endTime, int intervalMinutes)
         {
-            var timeSlots = new List<string>();
+            var timeSlots = new List<TimeSlotDto>();
             
             if (TimeSpan.TryParse(startTime, out var start) && TimeSpan.TryParse(endTime, out var end))
             {
                 var current = start;
                 while (current < end)
                 {
-                    timeSlots.Add(current.ToString(@"hh\:mm"));
-                    current = current.Add(TimeSpan.FromMinutes(intervalMinutes));
+                    var slotEnd = current.Add(TimeSpan.FromMinutes(intervalMinutes));
+                    if (slotEnd <= end)
+                    {
+                        timeSlots.Add(new TimeSlotDto 
+                        { 
+                            Start = FormatTime(current), 
+                            End = FormatTime(slotEnd), 
+                            IsBooked = false 
+                        });
+                    }
+                    current = slotEnd;
                 }
             }
             
             return timeSlots;
         }
+
+        private static string FormatTime(TimeSpan time)
+        {
+            var hours = time.Hours;
+            var minutes = time.Minutes;
+            var ampm = hours >= 12 ? "PM" : "AM";
+            
+            if (hours == 0)
+                hours = 12;
+            else if (hours > 12)
+                hours -= 12;
+                
+            return $"{hours}:{minutes:D2} {ampm}";
+        }
     }
-} 
+}

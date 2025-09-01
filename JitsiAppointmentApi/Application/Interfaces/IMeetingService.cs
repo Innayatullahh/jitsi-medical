@@ -1,4 +1,5 @@
 using JitsiAppointmentApi.Application.DTOs;
+using JitsiAppointmentApi.Core.Entities;
 
 namespace JitsiAppointmentApi.Application.Interfaces
 {
@@ -7,5 +8,6 @@ namespace JitsiAppointmentApi.Application.Interfaces
         Task<CreateMeetingResponse> CreateMeetingAsync(CreateMeetingRequest request);
         Task<MeetingResponse?> GetMeetingByIdAsync(int id);
         Task<JoinLinkResponse?> GetJoinLinkAsync(int id, string userName);
+        Task<IEnumerable<Meeting>> GetAllMeetingsAsync();
     }
 } 

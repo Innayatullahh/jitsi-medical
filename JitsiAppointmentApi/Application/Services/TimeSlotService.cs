@@ -41,7 +41,7 @@ namespace JitsiAppointmentApi.Application.Services
             }
             else
             {
-                // Recurring: RecurringDays is mandatory, Date must be empty
+                // Recurring: RecurringDays is mandatory, Date is optional
                 if (request.RecurringDays == null || request.RecurringDays.Count == 0)
                 {
                     return new CreateTimeSlotResponse
@@ -51,14 +51,8 @@ namespace JitsiAppointmentApi.Application.Services
                     };
                 }
 
-                if (!string.IsNullOrEmpty(request.Date))
-                {
-                    return new CreateTimeSlotResponse
-                    {
-                        Status = "error",
-                        Message = "Date should not be provided for recurring time slots"
-                    };
-                }
+                // Date is optional for recurring time slots - no validation needed
+                // User can provide date or leave it empty for recurring slots
             }
 
             // Validate Start/End times
