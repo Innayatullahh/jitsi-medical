@@ -61,7 +61,7 @@ namespace JitsiAppointmentApi.Application.DTOs
         public int Experience { get; set; }
         public string Address { get; set; } = string.Empty;
         public string About { get; set; } = string.Empty;
-        public string Avatar { get; set; } = string.Empty;
+        public IFormFile? ProfileImage { get; set; }
     }
 
     public class CreateDoctorProfileResponse

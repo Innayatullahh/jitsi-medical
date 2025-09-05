@@ -23,6 +23,16 @@ namespace JitsiAppointmentApi.Application.Services
 
         public async Task<CreateMeetingResponse> CreateMeetingAsync(CreateMeetingRequest request)
         {
+            if(await MeetingExistsAsync(request.DoctorName, request.ScheduledAt))
+            {
+                return new CreateMeetingResponse
+                {
+                    Status = "error",
+                    Message = $"A meeting with doctor {request.DoctorName} at {request.ScheduledAt.ToString("dd/MM/yyyy HH:mm")} already exists.",
+                    Data = null
+                };
+            }
+
             // Always generate a unique Jitsi room name (like old code)
             var roomName = $"jitsi-{Guid.NewGuid()}";
 
@@ -48,6 +58,12 @@ namespace JitsiAppointmentApi.Application.Services
         {
             var meeting = await _meetingRepository.GetByIdAsync(id);
             return meeting != null ? MapToMeetingResponse(meeting) : null;
+        }
+
+        private async Task<bool> MeetingExistsAsync(string doctorName, DateTime scheduledAt)
+        {
+            return await _meetingRepository.MeetingExistsAsync(doctorName, scheduledAt);
+            
         }
 
         public async Task<JoinLinkResponse?> GetJoinLinkAsync(int id, string userName)
@@ -85,6 +101,11 @@ namespace JitsiAppointmentApi.Application.Services
                 CreatedAt = meeting.CreatedAt,
                 UpdatedAt = meeting.UpdatedAt
             };
+        }
+
+        public async Task<IEnumerable<Meeting>> SearchMeetingsAsync(string doctorName, string? sortBy, string? status)
+        {
+            return await _meetingRepository.SearchSortByStatusDoctorAsync(doctorName, status, sortBy);
         }
     }
 } 

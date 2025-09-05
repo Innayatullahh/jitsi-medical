@@ -32,6 +32,24 @@ namespace JitsiAppointmentApi.Controllers
         {
             try
             {
+                string? imageUrl = null;
+                if (request.ProfileImage != null && request.ProfileImage.Length > 0)
+                {
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Avatars");
+                    if (!Directory.Exists(uploadsFolder))
+                        Directory.CreateDirectory(uploadsFolder);
+
+                    var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(request.ProfileImage.FileName)}";
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await request.ProfileImage.CopyToAsync(stream);
+                    }
+
+                    imageUrl = $"/Avatars/{uniqueFileName}";
+                }
+
                 var createRequest = new CreateDoctorRequest
                 {
                     FullName = request.FullName,
@@ -41,7 +59,7 @@ namespace JitsiAppointmentApi.Controllers
                     Experience = request.Experience,
                     Address = request.Address,
                     About = request.About,
-                    Avatar = request.Avatar
+                    Avatar = imageUrl ?? ""
                 };
                 
                 var result = await _doctorService.CreateDoctorAsync(createRequest);

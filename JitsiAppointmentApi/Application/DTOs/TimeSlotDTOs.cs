@@ -71,4 +71,10 @@ namespace JitsiAppointmentApi.Application.DTOs
         public string Status { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
     }
+    public class PaginatedTemplatesResponse
+    {
+        public string Status { get; set; } = "success";
+        public IEnumerable<ConsultationTemplateResponse> Data { get; set; } = new List<ConsultationTemplateResponse>();
+        public PaginationMetadata Pagination { get; set; } = new();
+    }
 } 
