@@ -23,7 +23,7 @@ namespace JitsiAppointmentApi.Application.Services
 
         public async Task<CreateMeetingResponse> CreateMeetingAsync(CreateMeetingRequest request)
         {
-            if(await MeetingExistsAsync(request.DoctorName, request.ScheduledAt))
+            if (await MeetingExistsAsync(request.DoctorName.ToLower(), request.ScheduledAt))
             {
                 return new CreateMeetingResponse
                 {

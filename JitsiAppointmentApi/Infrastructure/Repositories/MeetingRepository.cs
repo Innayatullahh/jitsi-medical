@@ -18,7 +18,7 @@ namespace JitsiAppointmentApi.Infrastructure.Repositories
 
         public async Task<bool> MeetingExistsAsync(string doctorName, DateTime scheduledAt)
         {
-            return await _dbSet.AnyAsync(m => m.DoctorName == doctorName && m.ScheduledAt == scheduledAt);
+            return await _dbSet.AnyAsync(m => m.DoctorName.ToLower() == doctorName && m.ScheduledAt == scheduledAt);
         }
 
         public async Task<IEnumerable<Meeting>> SearchSortByStatusDoctorAsync(string doctorName, string status, string sortBy)
@@ -43,7 +43,7 @@ namespace JitsiAppointmentApi.Infrastructure.Repositories
                         query = query.Where(m => m.ScheduledAt < now);
                         break;
                     case "pending":
-                        query = query.Where(m => m.ScheduledAt.Date == now.Date);
+                        query = query.Where(m => m.ScheduledAt.Date == now);
                         break;
                 }
             }
@@ -63,9 +63,9 @@ namespace JitsiAppointmentApi.Infrastructure.Repositories
                                      .OrderBy(m => m.ScheduledAt);
                         break;
                     case "month":
-                        var startOfMonth = new DateTime(now.Year, now.Month, 1);
-                        var endOfMonth = startOfMonth.AddMonths(1);
-                        query = query.Where(m => m.ScheduledAt.Date >= startOfMonth.Date && m.ScheduledAt.Date < endOfMonth.Date)
+                        var startOfMonth = DateTime.SpecifyKind(new DateTime(now.Year, now.Month, 1), DateTimeKind.Utc);
+                        var endOfMonth = DateTime.SpecifyKind(startOfMonth.AddMonths(1), DateTimeKind.Utc);
+                        query = query.Where(m => m.ScheduledAt >= startOfMonth && m.ScheduledAt < endOfMonth)
                                      .OrderBy(m => m.ScheduledAt);
                         break;
                 }

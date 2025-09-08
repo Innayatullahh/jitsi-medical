@@ -28,7 +28,7 @@ namespace JitsiAppointmentApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(CreateDoctorProfileResponse), 201)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<CreateDoctorProfileResponse>> CreateDoctorProfile([FromBody] CreateDoctorProfileRequest request)
+        public async Task<ActionResult<CreateDoctorProfileResponse>> CreateDoctorProfile([FromForm] CreateDoctorProfileRequest request)
         {
             try
             {
