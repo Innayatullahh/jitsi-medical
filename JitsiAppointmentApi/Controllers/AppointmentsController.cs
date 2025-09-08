@@ -2,6 +2,7 @@
 using JitsiAppointmentApi.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 
 namespace JitsiAppointmentApi.Controllers
 {
@@ -32,7 +33,11 @@ namespace JitsiAppointmentApi.Controllers
         [ProducesResponseType(503)]
         public async Task<IActionResult> GetAppointments(
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10)
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string search = "",
+            [FromQuery] string status = "",
+            [FromQuery] string sort = ""
+            )
         {
             // Validate pagination parameters
             if (page < 1)
@@ -47,9 +52,19 @@ namespace JitsiAppointmentApi.Controllers
 
             try
             {
+                IEnumerable<Core.Entities.Meeting> allMeetings = null;
                 // Get all meetings from database
-                var allMeetings = await _meetingService.GetAllMeetingsAsync();
-                
+                if (string.IsNullOrEmpty(search) && string.IsNullOrEmpty(status) && string.IsNullOrEmpty(sort))
+                {
+                    allMeetings = await _meetingService.GetAllMeetingsAsync();
+                }
+                else
+                {
+                    allMeetings = await _meetingService.SearchMeetingsAsync(search, sort, status);
+                }
+
+
+
                 if (allMeetings == null || !allMeetings.Any())
                 {
                     return StatusCode(503, new { status = "error", message = "No appointments available" });

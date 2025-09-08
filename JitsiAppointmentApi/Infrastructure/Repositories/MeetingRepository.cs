@@ -21,7 +21,7 @@ namespace JitsiAppointmentApi.Infrastructure.Repositories
             return await _dbSet.AnyAsync(m => m.DoctorName == doctorName && m.ScheduledAt == scheduledAt);
         }
 
-        public async Task<IEnumerable<Meeting>> SearchSortByStatusDoctorAsync(string doctorName, string? status = "upcoming", string? sortBy = "day")
+        public async Task<IEnumerable<Meeting>> SearchSortByStatusDoctorAsync(string doctorName, string status, string sortBy)
         {
             var query = _dbSet.AsQueryable();
 
@@ -32,40 +32,43 @@ namespace JitsiAppointmentApi.Infrastructure.Repositories
 
             var now = DateTime.UtcNow;
 
-            switch (status?.ToLower())
+            if (!string.IsNullOrWhiteSpace(status))
             {
-                case "upcoming":
-                    query = query.Where(m => m.ScheduledAt > now);
-                    break;
-                case "completed":
-                    query = query.Where(m => m.ScheduledAt < now);
-                    break;
-                case "pending":
-                    query = query.Where(m => m.ScheduledAt.Date == now.Date);
-                    break;
-                default:
-                    query = query.Where(m => m.ScheduledAt.Date > now.Date); ;
-                    break;
+                switch (status?.ToLower())
+                {
+                    case "upcoming":
+                        query = query.Where(m => m.ScheduledAt > now);
+                        break;
+                    case "completed":
+                        query = query.Where(m => m.ScheduledAt < now);
+                        break;
+                    case "pending":
+                        query = query.Where(m => m.ScheduledAt.Date == now.Date);
+                        break;
+                }
             }
 
-            switch (sortBy?.ToLower())
+            if (!string.IsNullOrWhiteSpace(sortBy))
             {
-                case "week":
-                    // Order by week number using ISO 8601 week calculation
-                    query = query.OrderBy(m => System.Globalization.CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(
-                        m.ScheduledAt,
-                        System.Globalization.CalendarWeekRule.FirstFourDayWeek,
-                        DayOfWeek.Monday));
-                    break;
-                case "month":
-                    query = query.OrderBy(m => m.ScheduledAt.Year).ThenBy(m => m.ScheduledAt.Month);
-                    break;
-                case "year":
-                    query = query.OrderBy(m => m.ScheduledAt.Year);
-                    break;
-                default:
-                    query = query.OrderBy(m => m.ScheduledAt.Day);
-                    break;
+                switch (sortBy?.ToLower())
+                {
+                    case "day":
+                        query = query.Where(m => m.ScheduledAt.Date == now.Date)
+                                     .OrderBy(m => m.ScheduledAt);
+                        break;
+                    case "week":
+                        var startOfWeek = now.Date.AddDays(-(int)now.DayOfWeek + (int)DayOfWeek.Monday);
+                        var endOfWeek = startOfWeek.AddDays(7);
+                        query = query.Where(m => m.ScheduledAt.Date >= startOfWeek && m.ScheduledAt.Date < endOfWeek)
+                                     .OrderBy(m => m.ScheduledAt);
+                        break;
+                    case "month":
+                        var startOfMonth = new DateTime(now.Year, now.Month, 1);
+                        var endOfMonth = startOfMonth.AddMonths(1);
+                        query = query.Where(m => m.ScheduledAt.Date >= startOfMonth.Date && m.ScheduledAt.Date < endOfMonth.Date)
+                                     .OrderBy(m => m.ScheduledAt);
+                        break;
+                }
             }
 
             return await query.ToListAsync();

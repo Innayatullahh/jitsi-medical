@@ -85,41 +85,5 @@ namespace JitsiAppointmentApi.Controllers
             
             return Ok(joinLink);
         }
-
-        /// <summary>
-        /// Search meeting based on doctor name and status
-        /// </summary>
-        /// <param name="doctorName">Doctor Name</param>
-        /// <param name="status">Status</param>
-        /// <param name="sortBy">Sort by </param>
-        /// <returns>Meetings details</returns>
-        /// <response code="200">Returns the join link</response>
-        /// <response code="404">Meeting not found</response>
-
-        [HttpGet("{doctorName}/search-meetings")]
-        [ProducesResponseType(typeof(IEnumerable<MeetingResponse>), 200)]
-        public async Task<ActionResult<IEnumerable<MeetingResponse>>> SearchMeetings(string doctorName, [FromQuery] string? sortBy, [FromQuery] string? status)
-        {
-            // Call the new service method that queries the DB with filters and sorting
-            var meetings = await _meetingService.SearchMeetingsAsync(doctorName, sortBy, status);
-
-            if (meetings == null)
-            {
-                return NotFound("Meeting not found");
-            }
-
-            var result = meetings.Select(m => new MeetingResponse
-            {
-                Id = m.Id,
-                DoctorName = m.DoctorName,
-                PatientName = m.PatientName,
-                RoomName = m.RoomName,
-                ScheduledAt = m.ScheduledAt,
-                CreatedAt = m.CreatedAt,
-                UpdatedAt = m.UpdatedAt
-            });
-
-            return Ok(result);
-        }
     }
 }
