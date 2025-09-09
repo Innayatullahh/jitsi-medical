@@ -21,13 +21,13 @@ namespace JitsiAppointmentApi.Infrastructure.Repositories
             return await _dbSet.AnyAsync(m => m.DoctorName.ToLower() == doctorName && m.ScheduledAt == scheduledAt);
         }
 
-        public async Task<IEnumerable<Meeting>> SearchSortByStatusDoctorAsync(string doctorName, string status, string sortBy)
+        public async Task<IEnumerable<Meeting>> SearchSortByStatusDoctorAsync(string patientName, string status, string sortBy)
         {
             var query = _dbSet.AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(doctorName))
+            if (!string.IsNullOrWhiteSpace(patientName))
             {
-                query = query.Where(m => m.DoctorName.ToLower() == doctorName.ToLower());
+                query = query.Where(m => m.PatientName.ToLower() == patientName.ToLower());
             }
 
             var now = DateTime.UtcNow;

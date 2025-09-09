@@ -103,9 +103,9 @@ namespace JitsiAppointmentApi.Application.Services
             };
         }
 
-        public async Task<IEnumerable<Meeting>> SearchMeetingsAsync(string doctorName, string? sortBy, string? status)
+        public async Task<IEnumerable<Meeting>> SearchMeetingsAsync(string patientName, string? sortBy, string? status)
         {
-            return await _meetingRepository.SearchSortByStatusDoctorAsync(doctorName, status, sortBy);
+            return await _meetingRepository.SearchSortByStatusDoctorAsync(patientName, status, sortBy);
         }
     }
 } 

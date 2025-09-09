@@ -6,6 +6,6 @@ namespace JitsiAppointmentApi.Core.Interfaces
     {
         Task<Meeting?> GetByRoomNameAsync(string roomName);
         Task<bool> MeetingExistsAsync(string doctorName, DateTime scheduledAt);
-        Task<IEnumerable<Meeting>> SearchSortByStatusDoctorAsync(string doctorName, string status, string sortBy);
+        Task<IEnumerable<Meeting>> SearchSortByStatusDoctorAsync(string patientName, string status, string sortBy);
     }
 } 
