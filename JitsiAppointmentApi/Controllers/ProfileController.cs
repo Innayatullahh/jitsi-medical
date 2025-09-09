@@ -28,7 +28,7 @@ namespace JitsiAppointmentApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(CreateDoctorProfileResponse), 201)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<CreateDoctorProfileResponse>> CreateDoctorProfile([FromForm] CreateDoctorProfileRequest request)
+        public async Task<ActionResult<CreateDoctorProfileResponse>> CreateDoctorProfile([FromForm] DoctorProfileRequest request)
         {
             try
             {
@@ -152,61 +152,90 @@ namespace JitsiAppointmentApi.Controllers
         [ProducesResponseType(typeof(UpdateDoctorProfileResponse), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<UpdateDoctorProfileResponse>> UpdateDoctorProfile([FromBody] UpdateDoctorProfileRequest request)
-        {
-            try
+            public async Task<ActionResult<UpdateDoctorProfileResponse>> UpdateDoctorProfile([FromForm] DoctorProfileRequest request)
             {
-                // TODO: Get doctor ID from JWT token
-                // For now, using a default ID - this should be extracted from the authenticated user
-                var doctorId = 1; // This should come from JWT token
-                
-                var updateRequest = new UpdateDoctorRequest
+                try
                 {
-                    FullName = request.FullName,
-                    Email = request.Email,
-                    Phone = request.Phone,
-                    Bio = request.Bio,
-                    Experience = request.Experience,
-                    Address = request.Address,
-                    About = request.About,
-                    Avatar = request.Avatar
-                };
-                
-                var result = await _doctorService.UpdateDoctorAsync(doctorId, updateRequest);
-                
-                if (result.Status == "error")
-                {
-                    if (result.Message.Contains("not found"))
+                    // TODO: Get doctor ID from JWT token
+                    var doctorId = 1; // This should come from JWT token
+
+                    string? imageUrl = string.Empty;
+
+                    if (request.ProfileImage != null && request.ProfileImage.Length > 0)
                     {
-                        return NotFound(new { success = false, message = "Doctor not found" });
+                        // Optionally: Get the current doctor to delete the old image
+                        var doctor = await _doctorService.GetDoctorByIdAsync(doctorId);
+                        if (doctor != null && !string.IsNullOrEmpty(doctor.Avatar))
+                        {
+                            var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", doctor.Avatar.TrimStart('/'));
+                            if (System.IO.File.Exists(oldImagePath))
+                            {
+                                System.IO.File.Delete(oldImagePath);
+                            }
+                        }
+
+                        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Avatars");
+                        if (!Directory.Exists(uploadsFolder))
+                            Directory.CreateDirectory(uploadsFolder);
+
+                        var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(request.ProfileImage.FileName)}";
+                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await request.ProfileImage.CopyToAsync(stream);
+                        }
+
+                        imageUrl = $"/Avatars/{uniqueFileName}";
                     }
-                    return BadRequest(new { success = false, message = result.Message });
+
+                    var updateRequest = new UpdateDoctorRequest
+                    {
+                        FullName = request.FullName,
+                        Email = request.Email,
+                        Phone = request.Phone,
+                        Bio = request.Bio,
+                        Experience = request.Experience,
+                        Address = request.Address,
+                        About = request.About,
+                        Avatar = imageUrl ?? ""
+                    };
+
+                    var result = await _doctorService.UpdateDoctorAsync(doctorId, updateRequest);
+
+                    if (result.Status == "error")
+                    {
+                        if (result.Message.Contains("not found"))
+                        {
+                            return NotFound(new { success = false, message = "Doctor not found" });
+                        }
+                        return BadRequest(new { success = false, message = result.Message });
+                    }
+
+                    var response = new UpdateDoctorProfileResponse
+                    {
+                        Success = true,
+                        Message = "Profile updated successfully",
+                        UpdatedProfile = new DoctorProfileResponse
+                        {
+                            Id = result.Data!.Id,
+                            FullName = result.Data.FullName,
+                            Email = result.Data.Email,
+                            Phone = result.Data.Phone,
+                            Bio = result.Data.Bio,
+                            Experience = result.Data.Experience,
+                            Address = result.Data.Address,
+                            About = result.Data.About,
+                            Avatar = result.Data.Avatar
+                        }
+                    };
+
+                    return Ok(response);
                 }
-                
-                var response = new UpdateDoctorProfileResponse
+                catch (Exception ex)
                 {
-                    Success = true,
-                    Message = "Profile updated successfully",
-                    UpdatedProfile = new DoctorProfileResponse
-                    {
-                        Id = result.Data!.Id,
-                        FullName = result.Data.FullName,
-                        Email = result.Data.Email,
-                        Phone = result.Data.Phone,
-                        Bio = result.Data.Bio,
-                        Experience = result.Data.Experience,
-                        Address = result.Data.Address,
-                        About = result.Data.About,
-                        Avatar = result.Data.Avatar
-                    }
-                };
-                
-                return Ok(response);
+                    return StatusCode(500, new { error = "Internal server error", message = ex.Message });
+                }
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = "Internal server error", message = ex.Message });
-            }
-        }
     }
-} 
+}

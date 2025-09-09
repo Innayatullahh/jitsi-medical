@@ -106,7 +106,9 @@ namespace JitsiAppointmentApi.Controllers
                                 // Clone the time range and assign only paginated slots
                                 var clonedTimeRange = new TimeRangeWithSlots
                                 {
-                                    TimeSlots = slots
+                                    TimeSlots = slots,
+                                    Start = tr.Start,
+                                    End = tr.End
                                 };
                                 return clonedTimeRange;
                             }).ToList();

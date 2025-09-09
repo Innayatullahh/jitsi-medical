@@ -78,12 +78,12 @@ namespace JitsiAppointmentApi.Application.Services
                     Message = "Doctor not found"
                 };
             }
-
+            
             // Check if email is being changed and if it already exists
             if (doctor.Email != request.Email)
             {
                 var existingDoctor = await _doctorRepository.GetByEmailAsync(request.Email);
-                if (existingDoctor != null)
+                if (existingDoctor != null && existingDoctor.Id != doctor.Id)
                 {
                     return new UpdateDoctorResponse
                     {

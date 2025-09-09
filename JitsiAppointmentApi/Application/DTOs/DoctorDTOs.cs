@@ -40,19 +40,7 @@ namespace JitsiAppointmentApi.Application.DTOs
         public string Avatar { get; set; } = string.Empty;
     }
 
-    public class UpdateDoctorProfileRequest
-    {
-        public string FullName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string Phone { get; set; } = string.Empty;
-        public string Bio { get; set; } = string.Empty;
-        public int Experience { get; set; }
-        public string Address { get; set; } = string.Empty;
-        public string About { get; set; } = string.Empty;
-        public string Avatar { get; set; } = string.Empty;
-    }
-
-    public class CreateDoctorProfileRequest
+    public class DoctorProfileRequest
     {
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
