@@ -40,7 +40,19 @@ namespace JitsiAppointmentApi.Application.Services
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
                 WriteIndented = false
             };
-            var timeRangesJson = System.Text.Json.JsonSerializer.Serialize(request.TimeRanges ?? new List<TimeRangeInput>(), jsonOptions);
+            var filteredTimeRanges = request.TimeRanges
+                .Where(x => !string.IsNullOrEmpty(x.Start) || !string.IsNullOrEmpty(x.End))
+                .ToList();
+            var timeRangesJson = System.Text.Json.JsonSerializer.Serialize(filteredTimeRanges, jsonOptions);
+
+            // Check if timeRangesJson contains data
+            if (string.IsNullOrWhiteSpace(timeRangesJson) || timeRangesJson == "[]" || filteredTimeRanges.Count == 0)
+            {
+                return new CreateConsultationTemplateResponse
+                {
+                    Message = "Time interval range cannot be empty"
+                };
+            }
 
             var template = new ConsultationTemplate
             {
